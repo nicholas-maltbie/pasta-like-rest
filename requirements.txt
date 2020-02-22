@@ -1,3 +1,1 @@
-# requirements.txt
-flask
-firebase_admin
+Flask==1.1.1
