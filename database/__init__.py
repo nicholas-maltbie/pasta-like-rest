@@ -354,7 +354,7 @@ class DatabaseManager:
             ROOM_STATUS_KEY: "lobby",
             ROOM_TYPE_KEY: "game",
             TIME_START_KEY: time.time(),
-            MAX_PLAYERS_KEY: 4,
+            MAX_PLAYERS_KEY: 999,
             PLAYERS_KEY: [],
             QUESTION_LIST_KEY: [],
             ACTIVE_QUESTION_KEY: "",
@@ -554,7 +554,7 @@ class TestDatabaseManager:
             ROOM_STATUS_KEY: "lobby",
             ROOM_TYPE_KEY: "game",
             TIME_START_KEY: str(time.time()),
-            MAX_PLAYERS_KEY: 4,
+            MAX_PLAYERS_KEY: 999,
             PLAYERS_KEY: [],
         }
 
