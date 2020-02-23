@@ -23,12 +23,12 @@ def getQuestionResponses(questionId):
 def respondToQuestion(questionId):
     headers = request.headers
     userId = headers[USERNAME]
-    response = request.json
+    answer_data = request.json
     if not db_container.get_database().question_exists(questionId):
         response = jsonify("Question Id not found")
         response.status_code = 404
         return response
-    result = db_container.get_database().set_question_response(questionId, userId, response)
+    result = db_container.get_database().set_question_response(questionId, userId, answer_data)
     responses = jsonify(result)
     responses.status_code = 200
     return responses
