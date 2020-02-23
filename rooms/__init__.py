@@ -26,7 +26,24 @@ def createRoom():
     resp.status_code = 201
     return resp
 
-@rooms_api.route("/<roomId>/active", methods=['GET'])
+@rooms_api.route("/<roomId>/active", methods=['GET', 'DELETE'])
+def handleActiveQuestion(roomId):
+    if request.method == 'DELETE':
+        return clearActiveQuestion(roomId)
+    elif request.method == 'GET':
+        return getActiveQuestion(roomId)
+    
+def clearActiveQuestion(roomId):
+    if not db_container.get_database().room_exists(roomId):
+        response = jsonify("Room Id not found")
+        response.status_code = 404
+        return response
+    
+    db_container.get_database().update_room(roomId, {ACTIVE_QUESTION_KEY: ""})
+    response = jsonify("")
+    response.status_code = 204
+    return response
+
 def getActiveQuestion(roomId):
     roomData = db_container.get_database().get_room(roomId)
     # Check to ensure room exists
