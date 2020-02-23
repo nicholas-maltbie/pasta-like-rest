@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request, session
+import urllib.parse
 from database import db_container, ACTIVE_QUESTION_KEY, QUESTION_LIST_KEY
 from games import ROOM_ID, USERNAME
+import json
 
 questions_api = Blueprint('questions_api', __name__)
 
@@ -41,7 +43,8 @@ def addNewQuestion(roomId):
         response = jsonify("Room Id not found")
         response.status_code = 404
         return response
-    options = request.json
+    json_obj = json.loads(urllib.parse.unquote_plus(request.data.decode()))
+    options = json_obj["opt"]
     questionId = db_container.get_database().make_new_question(options)
     db_container.get_database().update_room(roomId, {ACTIVE_QUESTION_KEY: questionId})
     current_questions = db_container.get_database().get_question_list(roomId)
