@@ -88,6 +88,16 @@ class BasicTests(unittest.TestCase):
         rooms_delete = self.app.delete('/rooms/%s' % room_id)
         self.assertEqual(rooms_delete.status_code, 404)
 
+    def test_update_room(self):
+        room_post = self.app.post('/rooms/')
+        self.assertEqual(room_post.status_code, 201)
+        self.assertTrue(valid_room_id(room_post.json))
+        room_id = room_post.json
+        add_players_test = self.app.patch(
+            '/rooms/%s' % room_id,
+            json={"players": ["user-1"]},
+            headers={'Content-Type': 'application/json'})
+        self.assertEqual(add_players_test.status_code, 200)
 
 if __name__ == '__main__':
     unittest.main()

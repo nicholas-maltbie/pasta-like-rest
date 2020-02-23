@@ -1,1 +1,2 @@
+service: flask
 runtime: python37
