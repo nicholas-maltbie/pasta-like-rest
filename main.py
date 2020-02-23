@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from rooms import rooms_api
 from games import games_api
+from questions import questions_api
 from flask_cors import CORS
 from firebase_admin import credentials, initialize_app
 import os
@@ -19,6 +20,7 @@ cors = CORS(app, supports_credentials=True)
 
 app.register_blueprint(rooms_api, url_prefix='/rooms')
 app.register_blueprint(games_api, url_prefix='/games')
+app.register_blueprint(questions_api, url_prefix='/questions')
 
 @app.route("/")
 def hello():
