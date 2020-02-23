@@ -1,0 +1,5 @@
+[run]
+omit = env/*
+
+[report]
+omit = env/*
