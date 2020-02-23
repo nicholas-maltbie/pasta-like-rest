@@ -2,6 +2,7 @@
 appengine-generated/
 
 # Flask .gitignore
+__pycache__
 .DS_Store
 .env
 .flaskenv

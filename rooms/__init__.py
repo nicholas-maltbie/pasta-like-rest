@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from dataManagement import game_database
+from database import game_database
 
 rooms_api = Blueprint('rooms_api', __name__)
 
