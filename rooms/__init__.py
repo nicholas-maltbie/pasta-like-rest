@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from database import db_container
+from database import db_container, ACTIVE_QUESTION_KEY
 
 rooms_api = Blueprint('rooms_api', __name__)
 
@@ -25,6 +25,20 @@ def createRoom():
     resp = jsonify(room_id)
     resp.status_code = 201
     return resp
+
+@rooms_api.route("/<roomId>/active", methods=['GET'])
+def getActiveQuestion(roomId):
+    roomData = db_container.get_database().get_room(roomId)
+    # Check to ensure room exists
+    if roomData == None:
+        response =  jsonify("Room not found")
+        response.status_code = 404
+        return response
+    
+    response = jsonify(roomData[ACTIVE_QUESTION_KEY])
+    response.status_code = 200
+    return response
+    
 
 @rooms_api.route("/<roomId>", methods=['GET', 'PATCH', 'DELETE'])
 def handleRoom(roomId=None):
