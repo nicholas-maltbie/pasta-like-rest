@@ -77,6 +77,7 @@ def attempt_join(join_room, join_name):
 
     response = jsonify({"status": "join", "username": join_name, "room": join_room})
     response.status_code = 200
+    response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
 @games_api.route("/join", methods=['POST'])
