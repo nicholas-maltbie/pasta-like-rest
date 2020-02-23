@@ -27,22 +27,6 @@ def getQuestionOptions(roomId, questionId):
     response.status_code = 200
     return response
 
-@questions_api.route("/<roomId>/active", methods=['DELETE', 'POST'])
-def handleActiveQuestion(roomId):
-    if request.method == 'DELETE':
-        return clearActiveQuestion(roomId)
-    
-def clearActiveQuestion(roomId):
-    if not db_container.get_database().room_exists(roomId):
-        response = jsonify("Room Id not found")
-        response.status_code = 404
-        return response
-    
-    db_container.get_database().update_room(roomId, {ACTIVE_QUESTION_KEY: ""})
-    response = jsonify("")
-    response.status_code = 204
-    return response
-
 def getQuestionList(roomId):
     if not db_container.get_database().room_exists(roomId):
         response = jsonify("Room Id not found")
