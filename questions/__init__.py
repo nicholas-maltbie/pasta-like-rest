@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, session
-from database import db_container
+from database import db_container, ACTIVE_QUESTION_KEY, QUESTION_LIST_KEY
+from games import ROOM_ID, USERNAME
 
 questions_api = Blueprint('questions_api', __name__)
 
@@ -12,36 +13,57 @@ def handleQuestion(roomId):
 
 @questions_api.route("/<roomId>/<questionId>", methods=['GET'])
 def getQuestionOptions(roomId, questionId):
-    pass
+    if not db_container.get_database().room_exists(roomId):
+        response = jsonify("Room Id not found")
+        response.status_code = 404
+        return response
+    if not db_container.get_database().question_exists(questionId):
+        response = jsonify("Question Id not found")
+        response.status_code = 404
+        return response
+    active_id = db_container.get_database().get_active_question(roomId)
+    active_options = db_container.get_database().get_question_options(active_id)
+    response = jsonify(active_options)
+    response.status_code = 200
+    return response
 
 @questions_api.route("/<roomId>/active", methods=['DELETE', 'POST'])
 def handleActiveQuestion(roomId):
     if request.method == 'DELETE':
         return clearActiveQuestion(roomId)
-    elif request.method == 'POST':
-        return setActiveQuestion(roomId)
-
-@questions_api.route("/<roomId>/responses/<questionId>", methods=['GET', 'POST'])
-def handlequestionResponse(roomId, questionId):
-    if request.method == 'GET':
-        return getQuestionResponses(roomId, questionId)
-    elif request.method == 'POST':
-        return respondToQuestion(roomId, questionId)
-
-def getQuestionResponses(roomId, questionId):
-    pass
-
-def respondToQuestion(roomId, questionId):
-    pass
-
+    
 def clearActiveQuestion(roomId):
-    pass
-
-def setActiveQuestion(roomId):
-    pass
+    if not db_container.get_database().room_exists(roomId):
+        response = jsonify("Room Id not found")
+        response.status_code = 404
+        return response
+    
+    db_container.get_database().update_room(roomId, {ACTIVE_QUESTION_KEY: ""})
+    response = jsonify("")
+    response.status_code = 204
+    return response
 
 def getQuestionList(roomId):
-    pass
+    if not db_container.get_database().room_exists(roomId):
+        response = jsonify("Room Id not found")
+        response.status_code = 404
+        return response
+    question_list = jsonify(db_container.get_database().get_question_list(roomId))
+    question_list.status_code = 200
+    return question_list
 
 def addNewQuestion(roomId):
-    pass
+    if not db_container.get_database().room_exists(roomId):
+        response = jsonify("Room Id not found")
+        response.status_code = 404
+        return response
+    options = request.json
+    questionId = db_container.get_database().make_new_question(options)
+    db_container.get_database().update_room(roomId, {ACTIVE_QUESTION_KEY: questionId})
+    current_questions = db_container.get_database().get_question_list(roomId)
+    db_container.get_database().update_room(roomId, {QUESTION_LIST_KEY: [questionId] + current_questions})
+
+    response = jsonify(questionId)
+    response.status_code = 200
+    return response
+

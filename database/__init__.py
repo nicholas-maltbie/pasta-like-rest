@@ -12,6 +12,13 @@ TIME_START_KEY = "time_start"
 ROOM_STATUS_KEY = "room_status"
 ROOM_TYPE_KEY = "room_type"
 MAX_PLAYERS_KEY = "max_players"
+QUESTION_LIST_KEY = "all_questions"
+ACTIVE_QUESTION_KEY = "active_question"
+
+QUESTION_ID_KEY = "question_id"
+QUESTION_OPTIONS_KEY = "options"
+QUESTION_RESPONSES_KEY = "responses"
+RESPONSE_KEY_ID = "selected"
 
 def get_uuid():
     """
@@ -53,6 +60,83 @@ def room_id_generator():
         yield "".join(room_numbers)
 
 class DatabaseManager:
+    def _get_new_question_id(self):
+        qid = get_uuid()
+        while self.question_exists(qid):
+            qid = get_uuid()
+        return qid
+
+    def set_question_response(self, question_id, user_id, response):
+        if not self.question_exists(question_id):
+            return None
+        db = firestore.client()
+        db.collection('questions') \
+            .document(question_id) \
+            .collection(QUESTION_RESPONSES_KEY) \
+            .document(user_id).set({RESPONSE_KEY_ID: response})
+        return response
+
+    def get_question_options(self, question_id):
+        if not self.question_exists(question_id):
+            return None
+        question_data = self.get_question(question_id)
+        options = question_data[QUESTION_OPTIONS_KEY]
+        return options
+
+    def get_question_responses(self, question_id):
+        if not self.question_exists(question_id):
+            return None
+        db = firestore.client()
+        response_ids = db.collection('questions').document(question_id).collection(QUESTION_RESPONSES_KEY).get()
+        question_doc = {el.id : el.to_dict()[RESPONSE_KEY_ID] for el in response_ids}
+        return question_doc
+        
+
+    def make_new_question(self, options):
+        new_id = self._get_new_question_id()
+        empty_question = {
+            QUESTION_ID_KEY: new_id,
+            QUESTION_OPTIONS_KEY: options,
+            TIME_START_KEY: time.time(),
+            #QUESTION_RESPONSES_KEY: {}
+        }
+
+        if new_id == None:
+            return None
+        
+        db = firestore.client()
+        rooms_ref = db.collection('questions')
+        rooms_ref.document(new_id).set(empty_question)
+        return new_id
+
+    def get_question(self, question_id):
+        if not self.question_exists(question_id):
+            return None
+        db = firestore.client()
+        question_doc = db.collection('questions').document(question_id).get()
+        question_data = question_doc.to_dict()
+
+        return question_data
+
+    def question_exists(self, question_id):
+        db = firestore.client()
+        questions_ref = db.collection('questions')
+        return questions_ref.document(question_id).get().exists
+
+    def get_active_question(self, room_id):
+        if not self.room_exists(room_id):
+            return None
+        db = firestore.client()
+        room_data = self.get_room(room_id)
+        return room_data[ACTIVE_QUESTION_KEY]
+
+    def get_question_list(self, room_id):
+        if not self.room_exists(room_id):
+            return []
+        db = firestore.client()
+        room_data = self.get_room(room_id)
+        return room_data[QUESTION_LIST_KEY]
+    
     def room_exists(self, room_id):
         """
         Parameters:
@@ -269,9 +353,11 @@ class DatabaseManager:
             ROOM_ID_KEY: new_id,
             ROOM_STATUS_KEY: "lobby",
             ROOM_TYPE_KEY: "game",
-            TIME_START_KEY: str(time.time()),
+            TIME_START_KEY: time.time(),
             MAX_PLAYERS_KEY: 4,
             PLAYERS_KEY: [],
+            QUESTION_LIST_KEY: [],
+            ACTIVE_QUESTION_KEY: "",
         }
 
         if new_id == None:
