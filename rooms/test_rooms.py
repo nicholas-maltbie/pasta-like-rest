@@ -2,7 +2,7 @@ import os
 import unittest
 
 from main import app
-from database import game_database, valid_room_id
+from database import db_container, valid_room_id
 
 class BasicTests(unittest.TestCase):
  
@@ -18,7 +18,8 @@ class BasicTests(unittest.TestCase):
         # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
         #     os.path.join(app.config['BASEDIR'], TEST_DB)
         self.app = app.test_client()
-        game_database._reset()
+        db_container.set_test_mode()
+        db_container.get_database()._reset()
 
         self.assertEqual(app.debug, False)
  

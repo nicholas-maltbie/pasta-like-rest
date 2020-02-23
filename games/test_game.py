@@ -2,7 +2,7 @@ import os
 import unittest
 
 from main import app
-from database import game_database, valid_room_id
+from database import db_container, valid_room_id
 from games import ROOM_ID, USERNAME
 
 class BasicTests(unittest.TestCase):
@@ -20,7 +20,8 @@ class BasicTests(unittest.TestCase):
         # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
         #     os.path.join(app.config['BASEDIR'], TEST_DB)
         self.app = app.test_client()
-        game_database._reset()
+        db_container.set_test_mode()
+        db_container.get_database()._reset()
 
         self.assertEqual(app.debug, False)
 
@@ -58,7 +59,7 @@ class BasicTests(unittest.TestCase):
         self.assertEqual(result_join.status_code, 400)
 
     def test_join_no_room(self):
-        new_id = game_database._get_new_id()
+        new_id = db_container.get_database()._get_new_id()
         result_join = self.app.post('/games/join', headers={USERNAME: "user", ROOM_ID: new_id})
         self.assertEqual(result_join.status_code, 404)
 
@@ -68,7 +69,7 @@ class BasicTests(unittest.TestCase):
 
     def test_join_full(self):
         suffix = 1
-        while not game_database.is_room_full(self.room_id):
+        while not db_container.get_database().is_room_full(self.room_id):
             test_client = app.test_client()
             result_join = test_client.post('/games/join', headers={USERNAME: "user" + str(suffix), ROOM_ID: self.room_id})
             self.assertEqual(result_join.status_code, 200)
@@ -79,14 +80,14 @@ class BasicTests(unittest.TestCase):
 
     def test_rejoin(self):
         test_client = app.test_client()
-        name = "user"
+        name = "USER"
         result_join = test_client.post('/games/join', headers={USERNAME: name, ROOM_ID: self.room_id})
         self.assertEqual(result_join.status_code, 200)
 
         result_join = test_client.post('/games/join', headers={USERNAME: name, ROOM_ID: self.room_id})
         self.assertEqual(result_join.status_code, 200)
 
-        all_players = game_database.get_players(self.room_id)
+        all_players = db_container.get_database().get_players(self.room_id)
         self.assertEqual(all_players, [name])
 
     def test_name_taken(self):
