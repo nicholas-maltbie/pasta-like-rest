@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify, request, session
-from database import game_database, valid_room_id
+from database import db_container, valid_room_id
 import re
 
-SESSION_USERNAME = "username"
-SESSION_ROOM = "room"
+SESSION_USERNAME = "SESSION_USERNAME"
+SESSION_ROOM = "SESSION_ROOM"
 
-ROOM_ID = "room_id"
-USERNAME = "username"
+ROOM_ID = "ROOM"
+USERNAME = "USERNAME"
 
 games_api = Blueprint('games_api', __name__)
 
@@ -25,7 +25,7 @@ def attempt_join(join_room, join_name):
         response = jsonify("Room Id not valid")
         response.status_code = 400
         return response
-    elif not game_database.room_exists(join_room):
+    elif not db_container.get_database().room_exists(join_room):
         response = jsonify("Room Id not found")
         response.status_code = 404
         return response
@@ -38,7 +38,7 @@ def attempt_join(join_room, join_name):
         session[SESSION_USERNAME] = session_name
         session[SESSION_ROOM] = session_room
 
-        response = jsonify("Successfully rejoined room %s as user %s" % (session_room, session_name))
+        response = jsonify({"status": "rejoin", "username": session_name, "room": session_room})
         response.status_code = 200
         return response
     
@@ -52,19 +52,19 @@ def attempt_join(join_room, join_name):
         return response
 
     # Check to ensure the game is not full
-    if game_database.is_room_full(join_room):
+    if db_container.get_database().is_room_full(join_room):
         response = jsonify("Room is full")
         response.status_code = 401
         return response
 
     # Check to ensure the game is not full
-    if game_database.is_player_in_room(join_room, join_name):
+    if db_container.get_database().is_player_in_room(join_room, join_name):
         response = jsonify("Name is taken")
         response.status_code = 401
         return response
 
     # Make request to join game from database
-    join_name = game_database.add_player(join_room, join_name)
+    join_name = db_container.get_database().add_player(join_room, join_name)
 
     if join_name == None:
         response = jsonify("Error joining room")
@@ -75,7 +75,7 @@ def attempt_join(join_room, join_name):
     session[SESSION_USERNAME] = join_name
     session[SESSION_ROOM] = join_room
 
-    response = jsonify("Successfully joined room %s as user %s" % (join_room, join_name))
+    response = jsonify({"status": "join", "username": join_name, "room": join_room})
     response.status_code = 200
     return response
 
@@ -83,7 +83,7 @@ def attempt_join(join_room, join_name):
 def joinGame():
     headers = request.headers
     room_id = headers[ROOM_ID].upper() if ROOM_ID in headers else None
-    name = headers[USERNAME] if USERNAME in headers else None
+    name = headers[USERNAME].upper() if USERNAME in headers else None
 
     if room_id == None or name == None:
         response = jsonify("Must provide room_id AND name")

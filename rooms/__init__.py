@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from database import game_database
+from database import db_container
 
 rooms_api = Blueprint('rooms_api', __name__)
 
@@ -11,13 +11,13 @@ def handleGetCreate():
         return createRoom()
 
 def listRooms():
-    room_list = game_database.list_rooms()
+    room_list = db_container.get_database().list_rooms()
     resp = jsonify(room_list)
     resp.status_code = 200
     return resp
 
 def createRoom():
-    room_id = game_database.create_room()
+    room_id = db_container.get_database().create_room()
     if room_id == None:
         response =  jsonify("Server error creating room")
         response.status_code = 500
@@ -36,7 +36,7 @@ def handleRoom(roomId=None):
         return deleteRoom(roomId)
 
 def updateRoom(roomId):
-    roomData = game_database.get_room(roomId)
+    roomData = db_container.get_database().get_room(roomId)
     # Check to ensure room exists
     if roomData == None:
         response =  jsonify("Room not found")
@@ -49,7 +49,7 @@ def updateRoom(roomId):
         return response
 
     # Update room
-    updated_room = game_database.update_room(roomId, request.json)
+    updated_room = db_container.get_database().update_room(roomId, request.json)
 
     if updated_room == None:
         response =  jsonify("Server error updating room")
@@ -62,13 +62,13 @@ def updateRoom(roomId):
 
 def deleteRoom(roomId):
     # Check to ensure room exists
-    if not game_database.room_exists(roomId):
+    if not db_container.get_database().room_exists(roomId):
         response =  jsonify("Room Id not found")
         response.status_code = 404
         return response
 
     # Delete room
-    response = game_database.delete_room(roomId)
+    response = db_container.get_database().delete_room(roomId)
 
     if response == True:
         response =  jsonify("Deleted room with id %s successfully" % roomId)
@@ -79,7 +79,7 @@ def deleteRoom(roomId):
     return response
 
 def getRoomData(roomId):
-    roomData = game_database.get_room(roomId)
+    roomData = db_container.get_database().get_room(roomId)
     # Check to ensure room exists
     if roomData == None:
         response =  jsonify("Room not found")
