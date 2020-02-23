@@ -75,7 +75,7 @@ def attempt_join(join_room, join_name):
     session[SESSION_USERNAME] = join_name
     session[SESSION_ROOM] = join_room
 
-    response = jsonify({"status": "join", "username": session_name, "room": session_room})
+    response = jsonify({"status": "join", "username": join_name, "room": join_room})
     response.status_code = 200
     return response
 
