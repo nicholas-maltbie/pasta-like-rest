@@ -14,7 +14,7 @@ app.secret_key = os.urandom(24)
 cred = credentials.Certificate('secrets/firebase-key.json')
 default_app = initialize_app(cred)
 
-CORS(app)
+#CORS(app)
 
 app.register_blueprint(rooms_api, url_prefix='/rooms')
 app.register_blueprint(games_api, url_prefix='/games')
