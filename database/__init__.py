@@ -55,6 +55,9 @@ class DatabaseManager:
     def __init__(self):
         self.rooms = dict()
 
+    def _reset(self):
+        self.rooms = dict()
+
     def room_exists(self, room_id):
         """
         Parameters:

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, session
-from project.database import game_database, valid_room_id
+from database import game_database, valid_room_id
 import re
 
 SESSION_USERNAME = "username"
