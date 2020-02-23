@@ -73,7 +73,7 @@ def attempt_join(join_room, join_name):
     
     # Set session token
     session[SESSION_USERNAME] = join_name
-    session[SESSION_RO0M] = join_room
+    session[SESSION_ROOM] = join_room
 
     response = jsonify("Successfully joined room %s as user %s" % (join_room, join_name))
     response.status_code = 200

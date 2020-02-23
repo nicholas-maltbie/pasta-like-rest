@@ -1,5 +1,5 @@
 [run]
-omit = env/*
+omit = env/*, *test_*.py
 
 [report]
-omit = env/*
+omit = env/*, *test_*.py

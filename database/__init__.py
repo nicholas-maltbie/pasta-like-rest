@@ -114,7 +114,7 @@ class DatabaseManager:
         if not self.room_exists(room_id):
             return None
         current_players = self.get_players(room_id)
-        return player in current_players        
+        return player_id in current_players        
 
     def add_player(self, room_id, player_id):
         """
@@ -140,7 +140,7 @@ class DatabaseManager:
 
         current_players = self.get_players(room_id)
         new_players = current_players + [player_id]
-        self.update_room(room_id, new_players)
+        self.update_room(room_id, {PLAYERS_KEY: new_players})
         return player_id
 
     def update_room(self, room_id, update_data):
@@ -156,11 +156,11 @@ class DatabaseManager:
         the room data associated with a room after the update or None if
         the room id is invalid
         """
-        if self.room_exists(room_id):
-            for elem in update_data:
-                self.rooms[room_id][elem] = update_data[elem]
-            return self.rooms[room_id]
-        return None
+        if not self.room_exists(room_id):
+            return None
+        for elem in update_data:
+            self.rooms[room_id][elem] = update_data[elem]
+        return self.rooms[room_id]
     
     def delete_room(self, room_id):
         """
@@ -207,7 +207,7 @@ class DatabaseManager:
         max_players = room_data[MAX_PLAYERS_KEY]
         num_players = self.get_num_player_in_room(room_id)
 
-        return max_players >= num_players
+        return num_players >= max_players
 
     def get_num_player_in_room(self, room_id):
         """
